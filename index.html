@@ -1,0 +1,127 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Ruang Interaksi Belajar</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--bg:#f4f6fb;--fg:#1c2233;--card:#fff;--pri:#5b3df5;--mut:#6b7385;--bd:#dde1ec;--ok:#26890c;--bad:#e21b3c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12141c;--fg:#eef0f7;--card:#1c2030;--pri:#8b76ff;--mut:#9aa2b8;--bd:#2d3350}}
+:root[data-theme="dark"]{--bg:#12141c;--fg:#eef0f7;--card:#1c2030;--pri:#8b76ff;--mut:#9aa2b8;--bd:#2d3350}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+#app{max-width:760px;margin:0 auto;padding:16px}
+h1{margin:8px 0 0;font-size:26px}h2{font-size:20px;margin:8px 0}.mut{color:var(--mut);font-size:14px}.warn{color:var(--bad)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin:12px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+button,input,textarea{font:inherit;color:inherit}
+input,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);margin:6px 0}
+button{cursor:pointer;border:0;border-radius:12px;padding:10px 16px;background:var(--pri);color:#fff;font-weight:600}
+button:disabled{opacity:.55;cursor:default}.og{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0}.og .opt{margin:0;text-align:center}button.ghost{background:transparent;color:var(--pri);border:1px solid var(--bd)}
+.big{padding:28px 10px;font-size:18px}.top{display:flex;gap:12px;align-items:center;margin-bottom:8px}
+.avs{display:flex;flex-wrap:wrap;gap:6px}.av{background:var(--bg);font-size:26px;padding:4px 8px;border:2px solid transparent}.av.on{border-color:var(--pri)}
+.opt{display:block;width:100%;text-align:left;margin:8px 0;padding:14px;font-size:17px}.opt.sel{outline:3px solid var(--fg)}
+.bar{background:var(--bd);border-radius:8px;height:22px;margin:4px 0;overflow:hidden}.bar i{display:block;height:100%;background:var(--pri);min-width:2px}
+.pin{font-size:48px;font-weight:800;letter-spacing:8px;text-align:center;color:var(--pri)}
+.chip{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:20px;padding:4px 12px;margin:4px}
+.bn{display:inline-block;font-size:64px;animation:bn 1s ease-in-out infinite alternate}@keyframes bn{to{transform:translateY(-14px) rotate(8deg)}}
+.pod{display:flex;align-items:flex-end;justify-content:center;gap:8px;margin:16px 0}.pod div{text-align:center;width:30%}.pod b{display:block;background:var(--pri);color:#fff;border-radius:10px 10px 0 0;padding-top:8px}
+.sc{overflow-x:auto}button{min-height:44px}.pin{font-size:clamp(34px,10vw,56px)}img,table{max-width:100%}
+@media(max-width:599px){#app{padding:12px}h1{font-size:22px}.opt{padding:16px;font-size:18px}.big{padding:22px 8px;font-size:16px}.chip{font-size:14px}.pod b{font-size:14px}.pod div{width:32%}}
+@media(min-width:600px){#app{max-width:900px;padding:24px;display:flex;flex-wrap:wrap;column-gap:12px;align-content:flex-start}#app>*{flex:0 0 100%;min-width:0}#app>.opt{flex:0 0 calc(50% - 6px)}#app>button{flex:0 0 auto}body{font-size:17px}.big{padding:36px 10px;font-size:20px}}
+@media(min-width:1024px){#app{max-width:1200px}.grid{grid-template-columns:repeat(4,1fr)}body{font-size:18px}h1{font-size:32px}.card{padding:20px}.opt{font-size:20px}.avs .av{font-size:32px}}
+body.proj #app{max-width:1100px;font-size:22px}body.proj h2{font-size:34px}body.proj .opt{font-size:26px;padding:22px}body.proj .pin{font-size:72px}table{border-collapse:collapse;font-size:13px}td,th{border:1px solid var(--bd);padding:4px 8px;text-align:left}
+</style></head><body><div id="app"></div>
+<script>
+const $=s=>document.querySelector(s),A=$('#app'),L='ABCD',COL=['#e21b3c','#1368ce','#d89e00','#26890c'],SH=['▲','◆','●','■'];
+const AV=['🦊','🐼','🐯','🦁','🐸','🐵','🦄','🐙','🐧','🐶','🐱','🐨'];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sv=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},ld=k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}};
+let db,user,sample,dl,isAdmin=false,adminMode=true,subs=[],me={id:'anon'+Math.random().toString(36).slice(2,8),name:ld('nm'),av:ld('av')||'🦊'},SV={},joinedPin='',tmr,auto=false;
+const stu=()=>!(isAdmin&&adminMode),unsub=()=>{subs.forEach(f=>f());subs=[];clearInterval(tmr)};
+const back=t=>`<div class="top"><button class="ghost" onclick="go('home')">← Menu</button><b>${t}</b></div>`;
+const nodb=()=>{A.innerHTML=back('')+'<p class="warn">Fitur data belum aktif. Buka halaman ini lewat tautan Claude yang sudah dibagikan.</p>'};
+function go(v){unsub();({home,awal:()=>survey('awal'),materi,akhir:()=>survey('akhir'),quiz}[v])()}
+(async()=>{try{user=await claude.use('user');db=await claude.use('db');sample=await claude.use('sample');dl=await claude.use('downloads');if(user){isAdmin=user.isOwner();me.id=await user.id()}}catch(e){}
+if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';home()})();
+function home(){A.innerHTML=`<h1>Ruang Interaksi Belajar</h1><p class="mut">Konsultan Pendidikan · Rudi Saputra, ST</p>
+${isAdmin?`<div class="card">Mode: <b>${adminMode?'Admin':'Siswa'}</b> <button class="ghost" onclick="adminMode=!adminMode;home()">Ganti mode</button></div>`:''}
+${stu()?`<div class="card"><b>Profil kamu</b><input placeholder="Nama kamu" value="${esc(me.name)}" oninput="me.name=this.value;sv('nm',this.value)"><div class="avs">${AV.map(a=>`<button class="av ${a==me.av?'on':''}" onclick="me.av='${a}';sv('av','${a}');home()">${a}</button>`).join('')}</div></div>`:''}
+<div class="grid"><button class="big" onclick="go('awal')">1. Survei Harapan</button><button class="big" onclick="go('materi')">2. Materi</button><button class="big" onclick="go('akhir')">3. Survei Akhir</button><button class="big" onclick="go('quiz')">4. Quiz</button></div>${db?'':'<p class="warn">Fitur data belum aktif di tampilan ini.</p>'}`}
+const PR={survey:'Dari teks berikut ambil tepat 10 pertanyaan survei. Balas HANYA JSON: {"qs":[{"q":"teks","opts":["pilihan"]}]}. opts [] bila pertanyaan isian.',
+materi:'Ubah teks berikut jadi 6-10 slide materi interaktif. Balas HANYA JSON: {"slides":[{"title":"","body":"maks 40 kata","q":"pertanyaan respon untuk siswa","opts":["A","B","C","D"]}]}',
+quiz:'Dari teks berikut ambil tepat 10 soal kuis lengkap jawaban. Balas HANYA JSON: {"qs":[{"q":"","type":"pilihan atau benar-salah","opts":["4 pilihan"] atau ["Benar","Salah"],"ans":0,"img":"URL sumber foto atau kosong","vid":"URL sumber video atau kosong"}]} (ans = indeks jawaban benar mulai 0).'};
+const aiPanel=(kind,path)=>`<div class="card"><b>Unggah PDF (dibaca AI)</b><input type="file" accept="application/pdf" onchange="ai('${kind}','${path}',this.files[0])"><div id="st" class="mut"></div></div>`;
+async function pdfText(f){const d=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;let t='';for(let i=1;i<=Math.min(d.numPages,30);i++){const c=await(await d.getPage(i)).getTextContent();t+=c.items.map(x=>x.str).join(' ')+'\n'}return t.slice(0,24000)}
+async function ai(kind,path,f){const st=$('#st');if(!f)return;if(!sample||!window.pdfjsLib){st.textContent='Fitur AI tidak tersedia';return}
+try{st.textContent='Membaca PDF…';const t=await pdfText(f);st.textContent='AI menyusun…';const r=await sample.json(PR[kind]+'\n\nTEKS:\n'+t);
+const c=kind=='materi'?{slides:r.slides}:{qs:r.qs.slice(0,10)};if(!Array.isArray(c.slides||c.qs))throw new Error('format');await db.doc(path).set(c);st.textContent='Berhasil, tersimpan ✓'}catch(e){st.textContent='Gagal: '+(e&&e.message||'periksa PDF')}}
+function survey(k){if(!db)return nodb();const T=k=='awal'?'Survei Harapan':'Survei Akhir';let cfg=null,rs=[],mine=null;SV[k]=SV[k]||{};
+const draw=()=>{SV[k]={cfg,rs};let h=back(T);
+if(stu()){if(!cfg)h+='<p class="mut">Belum ada pertanyaan.</p>';else if(mine)h+='<div class="card">Terima kasih, jawabanmu sudah terkirim ✓</div>';
+else h+=cfg.qs.map((q,i)=>`<div class="card"><b>${i+1}. ${esc(q.q)}</b>${q.opts&&q.opts.length?q.opts.map(o=>`<label style="display:block;margin:6px 0"><input type="radio" name="q${i}" value="${esc(o)}" style="width:auto"> ${esc(o)}</label>`).join(''):`<textarea id="q${i}" rows="2"></textarea>`}</div>`).join('')+`<button onclick="sendSv('${k}')">Kirim jawaban</button>`}
+else{h+=aiPanel('survey','cfg/'+k);if(cfg){h+=`<div class="card"><b>Responden: ${rs.length}</b> <button class="ghost" onclick="csv('${k}')">Unduh spreadsheet (CSV)</button></div>`;
+h+=cfg.qs.map((q,i)=>`<div class="card"><b>${i+1}. ${esc(q.q)}</b>`+(q.opts&&q.opts.length?q.opts.map(o=>{const n=rs.filter(r=>r.a[i]==o).length;return`<div>${esc(o)} (${n})<div class="bar"><i style="width:${rs.length?n/rs.length*100:0}%"></i></div></div>`}).join(''):rs.map(r=>`<div class="mut">• ${esc(r.a[i])}</div>`).join(''))+'</div>').join('');
+h+=`<div class="card sc"><b>Hasil individu</b><table><tr><th>Nama</th>${cfg.qs.map((_,i)=>`<th>P${i+1}</th>`).join('')}</tr>${rs.map(r=>`<tr><td>${esc(r.name)}</td>${cfg.qs.map((_,i)=>`<td>${esc(r.a[i])}</td>`).join('')}</tr>`).join('')}</table></div>`}}
+A.innerHTML=h};
+subs.push(db.doc('cfg/'+k).onSnapshot(s=>{cfg=s.exists?s.data():null;draw()}));
+if(stu())subs.push(db.doc(`resp_${k}/${me.id}`).onSnapshot(s=>{mine=s.exists?s.data():null;draw()}));else subs.push(db.collection('resp_'+k).onSnapshot(s=>{rs=s.docs.map(d=>d.data());draw()}))}
+async function sendSv(k){if(!me.name.trim())return alert('Isi nama dulu di menu utama');const a=SV[k].cfg.qs.map((q,i)=>q.opts&&q.opts.length?(document.querySelector(`input[name=q${i}]:checked`)||{}).value||'':$('#q'+i).value);await db.doc(`resp_${k}/${me.id}`).set({name:me.name,a,ts:Date.now()})}
+function csv(k){const{cfg,rs}=SV[k];const rows=[['Nama',...cfg.qs.map((x,i)=>'P'+(i+1)+' '+x.q)],...rs.map(r=>[r.name,...cfg.qs.map((_,i)=>r.a[i]??'')])];
+const t='\ufeff'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');if(dl)dl.save({filename:`survei_${k}.csv`,data:t}).catch(()=>{})}
+function materi(){if(!db)return nodb();let cfg=null,st={idx:0},rs=[],sel='';
+const put=async(f)=>{const r=db.doc('resp_materi/'+me.id),d=(await r.get()).data()||{};const n=f(d);if(n)await r.set({...d,...n,name:me.name,ts:Date.now()})};
+window.selM=id=>{sel=id;draw()};
+window.pbM=()=>db.doc('state/materi').set({...st,pb:!st.pb});
+window.majuM=id=>{const r=rs.find(x=>x.id==id);sel='';db.doc('state/materi').set({...st,pb:true,maju:id,majuName:r?r.name:'',mt:Date.now(),verdict:''})};
+window.vM=v=>db.doc('state/materi').set({...st,verdict:v});
+window.selesaiM=()=>db.doc('state/materi').set({...st,maju:'',verdict:''});
+window.stM=i=>{if(i>=0&&i<_S.length)db.doc('state/materi').set({idx:i,pb:false,maju:'',verdict:''})};
+window.roleM=(i,x)=>{if(!me.name.trim())return alert('Isi nama dulu di menu utama');put(d=>d['r'+i]?null:{['r'+i]:x})};
+window.ansM=(i,j)=>put(d=>d['a'+i]!==undefined?null:{['a'+i]:j});
+window.kM=(i,v)=>put(d=>({['k'+i]:st.mt+'|'+v}));
+const draw=()=>{let h=back('Materi');const S=cfg&&cfg.slides||[];window._S=S;const i=Math.min(st.idx||0,S.length-1),s=S[i];
+if(!stu())h+=aiPanel('materi','cfg/materi');
+if(!s){A.innerHTML=h+'<p class="mut">Belum ada materi.</p>';return}
+const mine=rs.find(r=>r.id==me.id)||{},role=mine['r'+i],nA=rs.filter(r=>r['a'+i]!==undefined).length,nK=rs.filter(r=>r['r'+i]=='koreksi').length,nJ=rs.filter(r=>r['r'+i]=='jawab').length;
+const cnt=(o,j)=>`<div class="opt" style="background:${COL[j%4]};color:#fff">${L[j]}. ${esc(o)} — ${rs.filter(r=>r['a'+i]===j).length} siswa</div>`;
+h+=`<div class="card"><span class="mut">Slide ${i+1}/${S.length}</span><h2>${esc(s.title)}</h2><p>${esc(s.body)}</p><b>${esc(s.q)}</b></div>`;
+if(st.maju)h+=`<div class="card"><b>${st.maju===me.id&&stu()?'Giliranmu! Maju ke papan tulis':esc(st.majuName)+' di papan tulis'} (1 menit)</b><div id="tm" class="pin" style="font-size:36px"></div>${st.verdict?`<p>Penilaian guru: <b>${st.verdict}</b></p>`:''}${stu()?'':`<button style="background:#26890c" onclick="vM('Benar')">✔ Benar</button> <button style="background:#e21b3c" onclick="vM('Salah')">✘ Salah</button> <button class="ghost" onclick="selesaiM()">Selesai</button><p class="mut">Koreksi siswa: Benar ${rs.filter(r=>r['k'+i]==st.mt+'|Benar').length} · Salah ${rs.filter(r=>r['k'+i]==st.mt+'|Salah').length}</p>`}</div>`;
+if(stu()){
+if(!role)h+=`<div class="og"><button class="opt" style="background:#1368ce" onclick="roleM(${i},'jawab')">✋ Saya mau jawab</button><button class="opt" style="background:#26890c" onclick="roleM(${i},'koreksi')">🔍 Saya mengoreksi</button></div>`;
+else if(role=='jawab')h+=`<div class="card">Siswa yang sudah menjawab: <b>${nA}</b></div>`+'<div class="og">'+s.opts.map((o,j)=>`<button class="opt ${mine['a'+i]===j?'sel':''}" style="background:${COL[j%4]}" ${mine['a'+i]!==undefined?'disabled':''} onclick="ansM(${i},${j})">${L[j]}. ${esc(o)}</button>`).join('')+'</div>';
+else{h+=`<div class="card">Siswa yang ingin mengoreksi: <b>${nK}</b><br>Siswa yang sudah menjawab: <b>${nA}</b></div>`+'<div class="og">'+s.opts.map(cnt).join('')+'</div>';
+if(st.maju&&st.maju!==me.id){const kv=(mine['k'+i]||'').split('|'),v=kv[0]==String(st.mt)?kv[1]:'';h+=v?`<div class="card">Koreksimu untuk ${esc(st.majuName)}: <b>${v}</b> ✓</div>`:`<div class="card"><b>Koreksi jawaban ${esc(st.majuName)}</b></div><div class="og"><button class="opt" style="background:#26890c" onclick="kM(${i},'Benar')">✔ Benar</button><button class="opt" style="background:#e21b3c" onclick="kM(${i},'Salah')">✘ Salah</button></div>`}}}
+else{h+=s.opts.map(cnt).join('')+`<p class="mut">Sudah menjawab: ${nA} · Mau menjawab: ${nJ} · Mengoreksi: ${nK}</p><button class="ghost" onclick="stM(${i-1})">← Sebelumnya</button><button onclick="stM(${i+1})">Materi berikutnya →</button><button style="background:#d89e00" onclick="pbM()">${st.pb?'Tutup pembahasan':'Pembahasan'}</button>`;
+if(st.pb){const chip=r=>`<button class="chip" style="color:var(--fg);border-color:${sel==r.id?'var(--pri)':'var(--bd)'}" onclick="selM('${r.id}')">${esc(r.name)}${r['a'+i]!==undefined?' ('+L[r['a'+i]]+')':''}</button>`;
+h+=`<div class="card"><b>Mau menjawab (${nJ})</b><br>${rs.filter(r=>r['r'+i]=='jawab').map(chip).join('')}</div><div class="card"><b>Hanya mengoreksi (${nK})</b><br>${rs.filter(r=>r['r'+i]=='koreksi').map(chip).join('')}</div>`}
+const r=rs.find(x=>x.id==sel);if(r)h+=`<div class="card"><b>${esc(r.name)}</b> <button onclick="majuM('${r.id}')">Maju</button></div>`}
+A.innerHTML=h;clearInterval(tmr);if(st.maju){const tk=()=>{const e=$('#tm');if(!e)return;const l=Math.max(0,60-Math.floor((Date.now()-st.mt)/1000));e.textContent='⏱ '+Math.floor(l/60)+':'+String(l%60).padStart(2,'0')};tk();tmr=setInterval(tk,500)}};
+subs.push(db.doc('cfg/materi').onSnapshot(s=>{cfg=s.exists?s.data():null;draw()}));
+subs.push(db.doc('state/materi').onSnapshot(s=>{st=s.exists?s.data():{idx:0};draw()}));
+subs.push(db.collection('resp_materi').onSnapshot(s=>{rs=s.docs.map(d=>({id:d.id,...d.data()}));draw()}))}
+function quiz(){if(!db)return nodb();let cfg=null,st=null,P=[];
+const rank=()=>P.filter(p=>st&&p.pin===st.pin).sort((a,b)=>(b.score||0)-(a.score||0));
+const podium=r=>`<div class="pod">${[1,0,2].map(k=>r[k]?`<div><span class="bn" style="font-size:40px">${esc(r[k].av)}</span><br>${esc(r[k].name)}<b style="height:${[110,150,80][k==0?1:k==1?0:2]}px">${k+1}<br>${r[k].score||0}</b></div>`:'').join('')}</div>`;
+const lb=r=>r.map((p,i)=>`<div class="chip">${i+1}. ${esc(p.av)} ${esc(p.name)} — ${p.score||0}</div>`).join('');
+const draw=()=>{let h=back('Quiz'),Q=cfg&&cfg.qs||[],q=st&&Q[st.idx],r=rank();
+if(!stu()){h+='<button class="ghost" onclick="document.body.classList.toggle(\'proj\')">🖥 Mode proyektor</button>'+aiPanel('quiz','cfg/quiz');
+if(!cfg)h+='';else if(!st||!st.phase||st.phase=='idle'||st.phase=='podium'&&0)h+='<div class="card">Waktu per soal: <input type="number" id="dur" min="5" max="300" value="20" style="width:90px;display:inline-block"> detik</div><button class="big" onclick="newRoom()">Buat ruangan baru</button>';
+else{if(st.phase=='lobby')h+=`<div class="card"><div class="mut">PIN ruangan</div><div class="pin">${st.pin}</div><div id="qr" style="display:flex;justify-content:center;margin:10px"></div><p class="mut" style="text-align:center">Scan QR atau ketik PIN</p><p>Waktu per soal: <input type="number" id="dur" min="5" max="300" value="${st.dur||20}" style="width:90px;display:inline-block" onchange="db.doc('state/quiz').update({dur:Math.max(5,Math.min(300,+this.value||20))})"> detik</p><p>Siswa masuk: <b>${r.length}</b></p>${r.map(p=>`<span class="chip">${esc(p.av)} ${esc(p.name)}</span>`).join('')}</div><button onclick="ph('q',0)">Mulai quiz</button>`;
+else if(st.phase=='q'||st.phase=='board'){const n=r.filter(p=>p['a'+st.idx]!==undefined).length;h+=`<div class="card"><span class="mut">Soal ${st.idx+1}/${Q.length} · ${esc(q.type)} · PIN ${st.pin}</span>${st.phase=='q'?'<div id="tm" class="pin" style="font-size:36px"></div>':''}<h2>${esc(q.q)}</h2>${q.img?`<div class="mut">Foto: <a href="${esc(q.img)}" target="_blank" rel="noopener">${esc(q.img)}</a></div>`:''}${q.vid?`<div class="mut">Video: <a href="${esc(q.vid)}" target="_blank" rel="noopener">${esc(q.vid)}</a></div>`:''}</div>`+q.opts.map((o,j)=>{const c=r.filter(p=>p['a'+st.idx]===j).length;return`<div class="opt" style="background:${COL[j%4]};color:#fff;${st.phase=='board'&&j!=q.ans?'opacity:.4':''}">${SH[j%4]} ${esc(o)}${st.phase=='board'?` — ${c}`:''}${st.phase=='board'&&j==q.ans?' ✓':''}</div>`}).join('')+`<p class="mut">Sudah menjawab: ${n}/${r.length}</p>`;
+if(st.phase=='q')h+=`<button onclick="ph('board',${st.idx})">Tutup & hasil sementara</button>`;else h+=`<div class="card"><b>Hasil sementara</b><br>${lb(r.slice(0,5))}</div>`+(st.idx+1<Q.length?`<button onclick="ph('q',${st.idx+1})">Soal berikutnya →</button> `:'')+`<button class="ghost" onclick="ph('podium',${st.idx})">Lihat ranking & podium</button>`}
+else{h+=`<div class="card"><h2>Juara 🏆</h2>${podium(r)}${lb(r)}</div><div class="card">Waktu per soal: <input type="number" id="dur" min="5" max="300" value="${st.dur||20}" style="width:90px;display:inline-block"> detik</div><button onclick="newRoom()">Ruangan baru</button>`}}}
+else{if(!st||!st.phase||st.phase=='idle')h+='<div class="card">Menunggu guru membuka ruangan…</div>';
+else if(joinedPin!==st.pin)h+=`<div class="card"><b>Masuk ruangan</b><div style="text-align:center"><span class="bn">${me.av}</span></div><p>${esc(me.name)||'(isi nama di menu utama)'}</p><input id="pin" inputmode="numeric" placeholder="Masukkan PIN"><button onclick="joinQ()">Masuk</button><div id="er" class="warn"></div></div>`;
+else{const mp=P.find(p=>p.id==me.id)||{},i=st.idx,got=mp['a'+i]!==undefined,pos=r.findIndex(p=>p.id==me.id)+1;h+=`<div style="text-align:center"><span class="bn">${me.av}</span> <b>${esc(me.name)}</b> · ${mp.score||0} poin</div>`;
+if(st.phase=='lobby')h+='<div class="card">Kamu sudah masuk! Tunggu guru memulai…</div>';
+else if(st.phase=='q'&&q)h+=`<div class="card"><span class="mut">Soal ${i+1}/${Q.length}</span><div id="tm" class="pin" style="font-size:36px"></div><h2>${esc(q.q)}</h2>${q.img?`<div class="mut"><a href="${esc(q.img)}" target="_blank" rel="noopener">Lihat foto sumber</a></div>`:''}${q.vid?`<div class="mut"><a href="${esc(q.vid)}" target="_blank" rel="noopener">Lihat video sumber</a></div>`:''}</div>`+(got?'<div class="card">Jawaban terkirim ⏳ Tunggu hasil…</div>':q.opts.map((o,j)=>`<button class="opt" style="background:${COL[j%4]}" onclick="ansQ(${j})">${SH[j%4]} ${esc(o)}</button>`).join(''));
+else if(st.phase=='board'&&q)h+=`<div class="card"><h2>${got&&mp['a'+i]===q.ans?'Benar! 🎉 +'+(mp['p'+i]||0):'Belum tepat 😅'}</h2><p>Jawaban: <b>${esc(q.opts[q.ans])}</b></p><p>Peringkatmu: <b>#${pos}</b> dari ${r.length}</p></div>`;
+else h+=`<div class="card"><h2>Podium 🏆</h2>${podium(r)}<p>Peringkatmu: <b>#${pos}</b></p></div>`}}
+A.innerHTML=h;clearInterval(tmr);if(st&&st.phase!='q')auto=false;if(st&&st.phase=='q'){const tk=()=>{const e=$('#tm');if(!e)return;const l=Math.max(0,(st.dur||20)-Math.floor((Date.now()-st.t0)/1000));e.textContent='⏱ '+l;if(l==0&&!stu()&&!auto){auto=true;ph('board',st.idx)}};tk();tmr=setInterval(tk,300)}if(!stu()&&st&&st.phase=='lobby'&&$('#qr')&&window.QRCode)new QRCode($('#qr'),{text:'https://claude.ai/artifact/TBoA2g2onmAoodCWZ6sYde',width:180,height:180})};
+subs.push(db.doc('cfg/quiz').onSnapshot(s=>{cfg=s.exists?s.data():null;draw()}));subs.push(db.doc('state/quiz').onSnapshot(s=>{st=s.exists?s.data():null;window._Q={st,cfg};draw()}));
+subs.push(db.collection('quizp').onSnapshot(s=>{P=s.docs.map(d=>({id:d.id,...d.data()}));draw()}))}
+window.newRoom=()=>db.doc('state/quiz').set({phase:'lobby',idx:0,pin:String(Math.floor(100000+Math.random()*900000)),dur:Math.max(5,Math.min(300,+($('#dur')||{}).value||20)),t0:Date.now()});
+window.ph=(p,i)=>db.doc('state/quiz').update({phase:p,idx:i,t0:Date.now()});
+window.joinQ=async()=>{const st=_Q.st,v=$('#pin').value.trim();if(!me.name.trim())return $('#er').textContent='Isi nama dulu di menu utama';if(v!==st.pin)return $('#er').textContent='PIN salah';
+await db.doc('quizp/'+me.id).set({name:me.name,av:me.av,pin:st.pin,score:0});joinedPin=st.pin};
+window.ansQ=async j=>{const{st,cfg}=_Q,i=st.idx,q=cfg.qs[i],t=Date.now()-st.t0,ok=j===q.ans,D=(st.dur||20)*1000,p=ok?Math.round(1000-Math.min(t,D)/D*500):0;if(t>D+1500)return;
+const s=await db.doc('quizp/'+me.id).get(),d=s.data()||{};if(d['a'+i]!==undefined)return;await db.doc('quizp/'+me.id).update({['a'+i]:j,['t'+i]:t,['p'+i]:p,score:(d.score||0)+p})};
+</script></body></html>
